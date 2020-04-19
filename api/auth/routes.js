@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
 });
 router.post('/signup', async (req, res) => {
   try {
-    const userDTO = pickData(req.body, ["firstName", "lastName", "email"])
+    const userDTO = pickData(req.body, ["firstName", "lastName", "email", "password"])
     const data = await db.User.create(userDTO);
     res.json({msg: 'User created', data})
   } catch (e) {
