@@ -1,5 +1,8 @@
 const express = require('express')
 const router = express.Router();
+const passport = require('passport');
+require('../../services/passport');
+;
 const models = require('../../models')
 const uploadToCloudinary = require('../../utils/imageUploader')
 const pickData = require('lodash/pick')
@@ -16,22 +19,23 @@ router.get('/', async (req, res) => {
         }
       ]
     });
-    res.json({msg: data})
+    res.json({status: 'OK', msg: "Get all flats", data})
   } catch (e) {
     throw new Error(e)
   }
 });
-router.post('/', async (req, res, next) => {
+router.post('/', passport.authenticate('jwt', {session: false}), async (req, res, next) => {
   try {
     const form = formidable({multiples: false});
     form.parse(req, async (err, fields, files) => {
       if (err) {
         next(err);
-        return res.json({msg: "ERORR", data: err});
+        return res.json({msg: "ERROR", data: err});
       }
-      const flatDTO = pickData(fields, ["title", "description", "bathrooms", "bedrooms", "isDiscount", "price", "userId"])
+      const flatDTO = pickData(fields, ["title", "description", "bathrooms", "bedrooms", "isDiscount", "price"])
       const {secure_url} = await uploadToCloudinary(files.image.path)
       flatDTO.image = secure_url
+      flatDTO.userId = req.user.id
       const newFlat = await models.Flat.create(flatDTO);
       res.json({msg: 'Flat created', data: newFlat});
     });
