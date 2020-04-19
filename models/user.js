@@ -1,5 +1,5 @@
 'use strict';
-const {comparePasswords, cryptPassword} = require("../utils/password");
+const {comparePasswords, cryptPassword, generateToken} = require("../utils/authUtils");
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
@@ -31,10 +31,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   User.prototype.generateToken = async function () {
     try {
-      const t = await jwt.sign({id: this.id, emal: this.email}, SECRET_KEY, {
-        expiresIn: "24h"
-      });
-      return t;
+      return await generateToken(this)
     } catch (error) {
       throw new Error(error);
     }
