@@ -22,5 +22,6 @@ module.exports = {
     database: process.env.DATABASE,
     host: process.env.DB_HOSTNAME,
     dialect: 'postgres',
+    use_env_variable: process.env.DATABASE_URL
   }
 };
