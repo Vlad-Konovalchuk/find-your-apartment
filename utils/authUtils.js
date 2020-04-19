@@ -1,20 +1,18 @@
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken');
 
-function getPasswordHash(password) {
-  const salt = bcrypt.genSaltSync()
-  const hash = bcrypt.hashSync(password, salt)
-
-  return hash
+async function generateToken({id, email}) {
+  try {
+    const t = await jwt.sign({id, email}, process.env.JWT_SECRET, {
+      expiresIn: "24h"
+    });
+    return t
+  } catch (e) {
+    throw new Error(e)
+  }
 }
 
 function comparePasswords(password, hash) {
-/*  return bcrypt.compare(password, hash, (err, res) => {
-    if (err) {
-      console.error(err)
-      throw new Error(err)
-    }
-    return res
-  })*/
   return new Promise((resolve, reject) => {
     bcrypt.compare(password, hash, (err, res) => {
       if (err) reject(err)
@@ -34,5 +32,6 @@ function cryptPassword(password) {
 
 module.exports = {
   cryptPassword,
+  generateToken,
   comparePasswords
 }
