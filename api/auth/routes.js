@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router();
+const passport = require('passport');
 const db = require('../../models')
 const pickData = require('lodash/pick')
 
@@ -20,26 +21,34 @@ router.post('/signup', async (req, res) => {
     throw new Error(e)
   }
 });
-router.post('/signin', async (req, res) => {
+router.post('/signin', async (req, res, next) => {
+  passport.authenticate('login', async (err, user, info) => {
     try {
-      const userDTO = pickData(req.body, ["email", "password"])
-      const user = await db.User.findOne({
-        where: {email: userDTO.email},
+      if (err || !user) {
+        const error = new Error('An Error occurred')
+        return next(error);
+      }
+      req.login(user, {session: false}, async (error) => {
+        if (error) return next(error)
+        try {
+          const token = await user.generateToken();
+          return res.json({
+            user: {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+            }, token
+          });
+        } catch (e) {
+          return next(e);
+        }
       });
-      if (!user) {
-        return res.status(404).json({msg: 'Wrong credential'})
-      }
-
-      if (!await user.checkPassword(userDTO.password)) {
-        return res.status(404).json({msg: 'Wrong credential'})
-      }
-
-      res.json({msg: 'User is exist', data: user})
-    } catch (e) {
-      throw new Error(e)
+    } catch (error) {
+      return next(error);
     }
-  }
-);
+  })(req, res, next);
+});
 router.delete('/delete-account', (req, res) => res.json({msg: 'Auth endpoint'}));
 router.put('/update-account', (req, res) => res.json({msg: 'Auth endpoint'}));
 
