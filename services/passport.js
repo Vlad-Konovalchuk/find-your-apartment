@@ -51,17 +51,9 @@ passport.use(new JWTStrategy({
   secretOrKey: process.env.JWT_SECRET,
   jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
 }, async (token, cb) => {
-  console.log('HJWY')
   const user = await User.findOne({where: {id: token.id}})
   if (!user) return cb("Wrong token")
   return cb(null, user)
-  /*try {
-    console.log("|jwtFromRequest",token)
-    return done(null, token.user);
-  } catch (error) {
-    console.log("CATCH", error)
-    done(error);
-  }*/
 }));
 
 module.exports = passport;
