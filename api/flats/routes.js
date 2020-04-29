@@ -2,7 +2,6 @@ const express = require('express')
 const router = express.Router();
 const passport = require('passport');
 require('../../services/passport');
-;
 const models = require('../../models')
 const uploadToCloudinary = require('../../utils/imageUploader')
 const pickData = require('lodash/pick')
